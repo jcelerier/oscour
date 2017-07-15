@@ -1,5 +1,6 @@
 #pragma once
 #include <oscour/utils.hpp>
+#include <oscour/exceptions.hpp>
 
 namespace oscour
 {
@@ -62,36 +63,36 @@ public:
 
   explicit bundle_view(const span& p) : elementCount_(0)
   {
-    Init(p);
+    init(p);
   }
   explicit bundle_view(const bundle_element_view& e)
       : elementCount_(0)
   {
-    Init(e.data());
+    init(e.data());
   }
 
-  uint64_t TimeTag() const
+  uint64_t time_tag() const
   {
     return to_uint64(timeTag_);
   }
 
-  uint32_t ElementCount() const
+  uint32_t size() const
   {
     return elementCount_;
   }
 
-  const_iterator ElementsBegin() const
+  const_iterator begin() const
   {
     return const_iterator(timeTag_ + 8);
   }
 
-  const_iterator ElementsEnd() const
+  const_iterator end() const
   {
     return const_iterator(end_);
   }
 
 private:
-  void Init(span bundle)
+  void init(span bundle)
   {
     if (!is_valid_element_size_value(bundle.size()))
       throw malformed_bundle("invalid bundle size");

@@ -131,7 +131,7 @@ struct osc_type<infinitum> {
 template<>
 struct osc_type<time_tag> {
   static const constexpr std::array typetags{ TIME_TAG_TYPE_TAG };
-  time_tag read(const char* p, char tag)
+  static time_tag read(const char* p, char tag)
   {
     return time_tag{to_uint64(p)};
   }
@@ -193,11 +193,21 @@ struct osc_type<blob> {
 template<>
 struct osc_type<begin_array> {
   static const constexpr std::array typetags{ ARRAY_BEGIN_TYPE_TAG };
+
+  static begin_array read(const char* p, char tag)
+  {
+    return {};
+  }
 };
 
 template<>
 struct osc_type<end_array> {
   static const constexpr std::array typetags{ ARRAY_END_TYPE_TAG };
+
+  static end_array read(const char* p, char tag)
+  {
+    return {};
+  }
 };
 
 }

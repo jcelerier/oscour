@@ -3,6 +3,8 @@
 #include <oscour/traits.hpp>
 #include <oscour/bundle.hpp>
 #include <oscour/exceptions.hpp>
+#include <array>
+#include <algorithm>
 
 namespace oscour
 {
@@ -84,7 +86,7 @@ public:
     if (!m_typeTags.empty())
     {
       if(is<T>())
-        return get_unchecked<T>;
+        return this->get_unchecked<T>();
       else
         throw wrong_argument_type();
     }

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 project(oscour)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+set(CMAKE_CXX_FLAGS "-std=c++17")
 add_executable(oscour
   oscour/bundle.hpp
   oscour/message.hpp
@@ -16,5 +17,4 @@ add_executable(oscour
   oscour/websocket.hpp
   oscour/oscour.hpp
   oscour/oscour.cpp)
-
-set_target_properties(oscour PROPERTIES CXX_STANDARD 17)
+# set_target_properties(oscour PROPERTIES CXX_STANDARD 17)

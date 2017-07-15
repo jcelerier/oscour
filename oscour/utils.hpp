@@ -1,5 +1,4 @@
 #pragma once
-#include <asio.hpp>
 #include <gsl/span>
 #include <stdexcept>
 #include <string_view>
