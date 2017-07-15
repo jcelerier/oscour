@@ -1,5 +1,6 @@
 #pragma once
 #include <asio.hpp>
+#include <thread>
 namespace oscour
 {
 using namespace asio;
@@ -17,7 +18,11 @@ public:
       : m_socket{m_service, udp::endpoint{udp::v4(), port}}, m_cb{std::move(m)}
   {
     start_receive();
-    m_service.run();
+  }
+
+  io_service& service()
+  {
+    return m_service;
   }
 
 private:

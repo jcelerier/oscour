@@ -12,26 +12,7 @@ struct osc_type<int32_t> {
 
   static int32_t read(const char* p, char tag)
   {
-#ifdef OSC_HOST_LITTLE_ENDIAN
-    union {
-      int32_t i;
-      char c[4];
-    } u;
-
-    u.c[0] = p[3];
-    u.c[1] = p[2];
-    u.c[2] = p[1];
-    u.c[3] = p[0];
-
-    return u.i;
-#else
-    return *(int32_t*)argumentPtr_;
-#endif
-  }
-
-  static void write(char* p, int32_t x)
-  {
-    from_int32(p, x);
+    return to_T<int32_t>(p);
   }
 };
 
@@ -40,6 +21,7 @@ struct osc_type<int64_t> {
   static const constexpr std::array typetags{ INT64_TYPE_TAG };
   static int64_t read(const char* p, char tag)
   {
+    return to_T<int64_t>(p);
   }
 };
 
@@ -48,21 +30,7 @@ struct osc_type<float> {
   static const constexpr std::array typetags{ FLOAT_TYPE_TAG };
   static float read(const char* p, char tag)
   {
-#ifdef OSC_HOST_LITTLE_ENDIAN
-    union {
-      float f;
-      char c[4];
-    } u;
-
-    u.c[0] = p[3];
-    u.c[1] = p[2];
-    u.c[2] = p[1];
-    u.c[3] = p[0];
-
-    return u.f;
-#else
-    return *(float*)argumentPtr_;
-#endif
+    return to_T<float>(p);
   }
 };
 
@@ -71,25 +39,7 @@ struct osc_type<double> {
   static const constexpr std::array typetags{ DOUBLE_TYPE_TAG };
   static double read(const char* p, char tag)
   {
-#ifdef OSC_HOST_LITTLE_ENDIAN
-    union {
-      double d;
-      char c[8];
-    } u;
-
-    u.c[0] = p[7];
-    u.c[1] = p[6];
-    u.c[2] = p[5];
-    u.c[3] = p[4];
-    u.c[4] = p[3];
-    u.c[5] = p[2];
-    u.c[6] = p[1];
-    u.c[7] = p[0];
-
-    return u.d;
-#else
-    return *(double*)argumentPtr_;
-#endif
+    return to_T<double>(p);
   }
 };
 
@@ -108,7 +58,7 @@ struct osc_type<char> {
 
   static char read(const char* p, char tag)
   {
-    return (char)to_int32(p);
+    return (char)to_T<int32_t>(p);
   }
 };
 
@@ -133,7 +83,7 @@ struct osc_type<time_tag> {
   static const constexpr std::array typetags{ TIME_TAG_TYPE_TAG };
   static time_tag read(const char* p, char tag)
   {
-    return time_tag{to_uint64(p)};
+    return time_tag{to_T<uint64_t>(p)};
   }
 };
 
@@ -142,7 +92,7 @@ struct osc_type<rgba> {
   static const constexpr std::array typetags{ RGBA_COLOR_TYPE_TAG };
   static rgba read(const char* p, char tag)
   {
-    return rgba{to_uint32(p)};
+    return rgba{to_T<uint32_t>(p)};
   }
 };
 
@@ -151,7 +101,7 @@ struct osc_type<midi> {
   static const constexpr std::array typetags{ MIDI_MESSAGE_TYPE_TAG };
   static midi read(const char* p, char tag)
   {
-    return midi{to_uint32(p)};
+    return midi{to_T<uint32_t>(p)};
   }
 };
 
@@ -181,7 +131,7 @@ struct osc_type<blob> {
   {
     blob b;
     // read blob size as an unsigned int then validate
-    std::size_t sizeResult = (std::size_t)to_uint32(p);
+    std::size_t sizeResult = (std::size_t)to_T<uint32_t>(p);
     if (!is_valid_element_size_value(sizeResult))
       throw malformed_message("invalid blob size");
 

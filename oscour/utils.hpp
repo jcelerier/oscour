@@ -5,8 +5,56 @@
 
 namespace oscour
 {
+template<typename... Args> struct dummy {};
 using span = gsl::span<const char>;
-#define OSC_HOST_LITTLE_ENDIAN
+
+static const constexpr bool is_little_endian = (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__);
+template<typename T>
+inline void from_T(char* p, T x)
+{
+  if constexpr(is_little_endian)
+  {
+    union {
+      T i;
+      char c[sizeof(T)];
+    } u;
+
+    u.i = x;
+
+    for(int i = 0; i < sizeof(T); i++)
+    {
+      p[sizeof(T) - i - 1] = u.c[i];
+    }
+  }
+  else
+  {
+    *reinterpret_cast<T*>(p) = x;
+  }
+}
+
+template<typename T>
+T to_T(const char* p)
+{
+  if constexpr(is_little_endian)
+  {
+    union {
+      T i;
+      char c[sizeof(T)];
+    } u;
+
+    for(int i = 0; i < sizeof(T); i++)
+    {
+      u.c[i] = p[sizeof(T) - i - 1];
+    }
+
+    return u.i;
+  }
+  else
+  {
+    return *(T*)p;
+  }
+}
+
 enum
 {
   OSC_INT32_MAX = 0x7FFFFFFF,
@@ -30,90 +78,6 @@ enum ValueTypeSizes
 inline uint32_t RoundUp4(uint32_t x)
 {
   return (x + 3) & ~((uint32_t)0x03);
-}
-
-inline void from_int32(char* p, int32_t x)
-{
-#ifdef OSC_HOST_LITTLE_ENDIAN
-  union {
-    int32_t i;
-    char c[4];
-  } u;
-
-  u.i = x;
-
-  p[3] = u.c[0];
-  p[2] = u.c[1];
-  p[1] = u.c[2];
-  p[0] = u.c[3];
-#else
-  *reinterpret_cast<int32_t*>(p) = x;
-#endif
-}
-
-inline void FromUInt32(char* p, uint32_t x)
-{
-#ifdef OSC_HOST_LITTLE_ENDIAN
-  union {
-    uint32_t i;
-    char c[4];
-  } u;
-
-  u.i = x;
-
-  p[3] = u.c[0];
-  p[2] = u.c[1];
-  p[1] = u.c[2];
-  p[0] = u.c[3];
-#else
-  *reinterpret_cast<uint32_t*>(p) = x;
-#endif
-}
-
-inline void FromInt64(char* p, int64_t x)
-{
-#ifdef OSC_HOST_LITTLE_ENDIAN
-  union {
-    int64_t i;
-    char c[8];
-  } u;
-
-  u.i = x;
-
-  p[7] = u.c[0];
-  p[6] = u.c[1];
-  p[5] = u.c[2];
-  p[4] = u.c[3];
-  p[3] = u.c[4];
-  p[2] = u.c[5];
-  p[1] = u.c[6];
-  p[0] = u.c[7];
-#else
-  *reinterpret_cast<int64_t*>(p) = x;
-#endif
-}
-
-inline void FromUInt64(char* p, uint64_t x)
-{
-#ifdef OSC_HOST_LITTLE_ENDIAN
-  union {
-    uint64_t i;
-    char c[8];
-  } u;
-
-  u.i = x;
-
-  p[7] = u.c[0];
-  p[6] = u.c[1];
-  p[5] = u.c[2];
-  p[4] = u.c[3];
-  p[3] = u.c[4];
-  p[2] = u.c[5];
-  p[1] = u.c[6];
-  p[0] = u.c[7];
-#else
-  *reinterpret_cast<uint64_t*>(p) = x;
-#endif
 }
 
 // return the first 4 byte boundary after the end of a str4
@@ -152,90 +116,6 @@ inline const char* FindStr4End(const char* p, const char* end)
     return 0;
   else
     return p + 1;
-}
-
-inline int32_t to_int32(const char* p)
-{
-#ifdef OSC_HOST_LITTLE_ENDIAN
-  union {
-    int32_t i;
-    char c[4];
-  } u;
-
-  u.c[0] = p[3];
-  u.c[1] = p[2];
-  u.c[2] = p[1];
-  u.c[3] = p[0];
-
-  return u.i;
-#else
-  return *(int32_t*)p;
-#endif
-}
-
-inline uint32_t to_uint32(const char* p)
-{
-#ifdef OSC_HOST_LITTLE_ENDIAN
-  union {
-    uint32_t i;
-    char c[4];
-  } u;
-
-  u.c[0] = p[3];
-  u.c[1] = p[2];
-  u.c[2] = p[1];
-  u.c[3] = p[0];
-
-  return u.i;
-#else
-  return *(uint32_t*)p;
-#endif
-}
-
-inline int64_t to_int64(const char* p)
-{
-#ifdef OSC_HOST_LITTLE_ENDIAN
-  union {
-    int64_t i;
-    char c[8];
-  } u;
-
-  u.c[0] = p[7];
-  u.c[1] = p[6];
-  u.c[2] = p[5];
-  u.c[3] = p[4];
-  u.c[4] = p[3];
-  u.c[5] = p[2];
-  u.c[6] = p[1];
-  u.c[7] = p[0];
-
-  return u.i;
-#else
-  return *(int64_t*)p;
-#endif
-}
-
-inline uint64_t to_uint64(const char* p)
-{
-#ifdef OSC_HOST_LITTLE_ENDIAN
-  union {
-    uint64_t i;
-    char c[8];
-  } u;
-
-  u.c[0] = p[7];
-  u.c[1] = p[6];
-  u.c[2] = p[5];
-  u.c[3] = p[4];
-  u.c[4] = p[3];
-  u.c[5] = p[2];
-  u.c[6] = p[1];
-  u.c[7] = p[0];
-
-  return u.i;
-#else
-  return *(uint64_t*)p;
-#endif
 }
 
 constexpr inline bool is_valid_element_size_value(std::size_t x)

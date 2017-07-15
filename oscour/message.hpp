@@ -24,7 +24,7 @@ public:
   }
 
   template<typename Fun>
-  void apply(Fun f) {
+  void apply(Fun f) const {
     switch(type_tag())
     {
       case oscour::type_tag::INT32_TYPE_TAG:
@@ -243,7 +243,7 @@ private:
       {
         // treat blob size as an unsigned int for the purposes of this
         // calculation
-        uint32_t blobSize = to_uint32(m_value.m_arguments.data());
+        uint32_t blobSize = to_T<uint32_t>(m_value.m_arguments.data());
         m_value.m_arguments = { m_value.m_arguments.data() + sizeof(int32_t)
                              + RoundUp4(blobSize), m_value.m_arguments.data() + m_value.m_arguments.size()} ;
       }
@@ -333,7 +333,7 @@ public:
   }
   uint32_t address_pattern_as_uint32() const
   {
-    return to_uint32(m_addressPattern.data());
+    return to_T<uint32_t>(m_addressPattern.data());
   }
 
   std::size_t argument_count() const
@@ -397,7 +397,14 @@ private:
     else
     {
       m_typeTags = {tagBegin, end};
-      m_addressPattern = {message.data(), m_typeTags.data()};
+      auto addr_end = m_typeTags.data();
+      int i = 1;
+      for(; i < 5; i++)
+      {
+        if(*(addr_end - i) != 0)
+          break;
+      }
+      m_addressPattern = { message.data(), addr_end - i + 1 };
       if (m_typeTags[0] != ',')
         throw malformed_message("type tags not present");
 
@@ -484,7 +491,7 @@ private:
             {
               // treat blob size as an unsigned int for the purposes of this
               // calculation
-              uint32_t blobSize = to_uint32(argument);
+              uint32_t blobSize = to_T<uint32_t>(argument);
               argument
                   = argument + oscour::OSC_SIZEOF_INT32 + RoundUp4(blobSize);
               if (argument > end)

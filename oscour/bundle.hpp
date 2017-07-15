@@ -8,7 +8,7 @@ class bundle_element_view
 {
 public:
   bundle_element_view(const char* sizePtr)
-      : m_data{sizePtr + sizeof(int32_t), to_int32(sizePtr)}
+      : m_data{sizePtr + sizeof(int32_t), to_T<int32_t>(sizePtr)}
   {
   }
 
@@ -73,7 +73,7 @@ public:
 
   uint64_t time_tag() const
   {
-    return to_uint64(timeTag_);
+    return to_T<uint64_t>(timeTag_);
   }
 
   uint32_t size() const
@@ -119,7 +119,7 @@ private:
 
       // treat element size as an unsigned int for the purposes of this
       // calculation
-      uint32_t elementSize = to_uint32(p);
+      uint32_t elementSize = to_T<uint32_t>(p);
       if ((elementSize & ((uint32_t)0x03)) != 0)
         throw malformed_bundle("bundle element size must be multiple of four");
 
