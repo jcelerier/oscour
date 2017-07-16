@@ -11,7 +11,7 @@ int main()
     std::cerr << f << " " << c << std::endl;
   });
 
-  oscour::tcp_server s{ recv, 1234};
+  oscour::tcp_server s{recv, 1234};
   oscour::async_runner r{s};
   r.run();
 
