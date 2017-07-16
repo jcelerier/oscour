@@ -7,16 +7,6 @@
 #include <oscour/message_buffer.hpp>
 int main()
 {
-  oscour::message m("foo", 12, 34);
-  m.set("/bar", 123, 345);
-
-
-  for(auto c : oscour::span{oscour::message{"/foo/bar", 1234, "fooo"}})
-  {
-    std::cerr << c;
-  }
-  std::cerr << std::endl;
-
   oscour::osc_strict_receiver recv;
   recv.on_message("/foo/bar", [](int f, int c) {
     std::cerr << "case 1: " << f << " " << c << std::endl;
@@ -62,10 +52,9 @@ int main()
     std::this_thread::sleep_for(500ms);
 
     // Raw
-    //clt.send("/foo/bar\0\0\0\0,ii\0\0\0\0\1\0\0\0\2"s);
+    clt.send("/foo/bar\0\0\0\0,ii\0\0\0\0\1\0\0\0\2"s);
 
     // Manual stream
-    /*
     char buf[64] = { 0 };
     oscour::outbound_stream stream(buf, 64);
     stream << oscour::begin_message{"/foo/bar"}
@@ -73,16 +62,8 @@ int main()
            << 2
            << oscour::end_message{};
     clt.send({stream.data(), gsl::narrow_cast<std::ptrdiff_t>(stream.size())});
-    */
 
     // Simple
-    clt.send(oscour::message{"/foo/bar", 1234, "fooo"});
-
+    clt.send(oscour::message{"/foo/bar", 1234.f, "fooo"});
   }
-
-  oscour::tcp_server t([](auto f) {}, 5678);
-  ::unlink("/tmp/foo");
-  oscour::unix_server u([](auto f) {}, "/tmp/foo");
-  while (true)
-    ;
 }

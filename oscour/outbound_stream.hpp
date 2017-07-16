@@ -116,6 +116,18 @@ public:
     return *this;
   }
 
+  void write(std::size_t size)
+  {
+    to_net(m_messageCursor, size);
+  }
+
+  void write(outbound_stream& other)
+  {
+    to_net(m_messageCursor, (int32_t)other.size());
+    m_messageCursor += 4;
+    std::memcpy(m_messageCursor, other.data(), other.size());
+  }
+
   outbound_stream& operator<<(begin_message rhs)
   {
     if (is_message_in_progress())

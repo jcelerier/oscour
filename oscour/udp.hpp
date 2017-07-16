@@ -1,6 +1,6 @@
 #pragma once
+#include <oscour/utils.hpp>
 #include <asio.hpp>
-#include <thread>
 namespace oscour
 {
 using namespace asio;
@@ -8,14 +8,12 @@ using namespace asio::ip;
 
 class udp_client
 {
-
 public:
   udp_client(std::string host, uint16_t port)
       : m_resolver{m_service}
       , m_query{udp::v4(), host, std::to_string(port)}
       , m_endpoint{*m_resolver.resolve(m_query)}
       , m_socket{m_service}
-
   {
     m_socket.open(udp::v4());
   }

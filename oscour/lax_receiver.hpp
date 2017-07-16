@@ -6,32 +6,36 @@
 
 namespace oscour
 {
-template <typename T>
-struct yield_false : public std::false_type
-{
-};
 struct lax_converter
 {
   template <typename U>
-  void operator()(const nil&, U& u)
+  constexpr void operator()(const nil&, U& u)
+  {
+    u = {};
+  }
+  void operator()(const nil&, std::string& u)
   {
     u = {};
   }
   template <typename U>
-  void operator()(const infinitum&, U& u)
+  constexpr void operator()(const infinitum&, U& u)
+  {
+    u = {};
+  }
+  void operator()(const infinitum&, std::string& u)
   {
     u = {};
   }
 
-  void operator()(const rgba& t, Arithmetic& u)
+  constexpr void operator()(const rgba& t, Arithmetic& u)
   {
     u = t.value;
   }
-  void operator()(const midi& t, Arithmetic& u)
+  constexpr void operator()(const midi& t, Arithmetic& u)
   {
     u = t.value;
   }
-  void operator()(const time_tag& t, Arithmetic& u)
+  constexpr void operator()(const time_tag& t, Arithmetic& u)
   {
     u = t.value;
   }
@@ -51,19 +55,19 @@ struct lax_converter
   }
 
   template <typename U>
-  void operator()(const string& s, U& u)
+  constexpr void operator()(const string& s, U& u)
   {
     u = boost::lexical_cast<U>(s.value);
   }
 
   template <typename U>
-  void operator()(const symbol& s, U& u)
+  constexpr void operator()(const symbol& s, U& u)
   {
     u = boost::lexical_cast<U>(s.value);
   }
 
   template <typename T>
-  void operator()(const T& t, std::string& u)
+  constexpr void operator()(const T& t, std::string& u)
   {
     u = boost::lexical_cast<std::string>(t);
   }
@@ -76,9 +80,8 @@ public:
   void on_message(const std::string& data, Fun f)
   {
     // TODO remove trailing '\0'
-    if
-      constexpr(std::is_invocable_v<Fun, const oscour::message_view&>)
-          m_simpleHandlers.insert({data, f});
+    if constexpr(std::is_invocable_v<Fun, const oscour::message_view&>)
+      m_simpleHandlers.insert({data, f});
     else
       m_messageHandlers.insert({data, addHandler_impl(f, &Fun::operator())});
   }
@@ -184,7 +187,7 @@ private:
   {
     if (b != e)
     {
-      Arg a;
+      std::remove_const_t<std::remove_reference_t<Arg>> a;
       apply([&] (const auto& val) {
         using arg_type = std::remove_reference_t<decltype(val)>;
         if constexpr(std::is_convertible_v<arg_type, Arg>)

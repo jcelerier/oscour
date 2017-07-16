@@ -23,6 +23,12 @@ concept bool Any = requires {
     int{};
 };
 
+template <typename T>
+concept bool MessageArgument = requires {
+    NotAPointer<T>;
+};
+
+
 template <typename... Args>
 struct dummy
 {
