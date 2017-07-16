@@ -46,5 +46,4 @@ private:
   std::array<char, 16384> m_buf;
   OnMessage m_cb;
 };
-
 }

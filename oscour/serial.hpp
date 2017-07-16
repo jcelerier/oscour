@@ -13,4 +13,3 @@ class serial_server
 {
 };
 }
-

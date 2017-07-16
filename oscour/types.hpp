@@ -1,6 +1,6 @@
 #pragma once
-#include <oscour/utils.hpp>
 #include <oscour/exceptions.hpp>
+#include <oscour/utils.hpp>
 
 namespace oscour
 {
@@ -27,34 +27,46 @@ enum type_tag
 
 struct begin_bundle
 {
-  constexpr explicit begin_bundle(uint64_t tag = 1)
-    : timeTag(tag) { }
+  constexpr explicit begin_bundle(uint64_t tag = 1) : timeTag(tag)
+  {
+  }
 
   uint64_t timeTag{};
 };
-struct end_bundle { };
+struct end_bundle
+{
+};
 
 struct begin_message
 {
-  constexpr explicit begin_message(const char* mess)
-    : addressPattern(mess)
+  constexpr explicit begin_message(std::string_view mess)
+    : addressPattern{mess}
   {
   }
   std::string_view addressPattern{};
 };
-struct end_message { };
+struct end_message
+{
+};
 
-struct nil { };
-struct infinitum { };
+struct nil
+{
+};
+struct infinitum
+{
+};
 
 struct rgba
 {
   constexpr rgba() = default;
-  constexpr explicit rgba(uint32_t value_)
-    : value(value_) { }
+  constexpr explicit rgba(uint32_t value_) : value(value_)
+  {
+  }
 
   constexpr operator uint32_t() const
-  { return value; }
+  {
+    return value;
+  }
 
   uint32_t value{};
 };
@@ -62,11 +74,14 @@ struct rgba
 struct midi
 {
   constexpr midi() = default;
-  constexpr explicit midi(uint32_t value_)
-    : value(value_) { }
+  constexpr explicit midi(uint32_t value_) : value(value_)
+  {
+  }
 
   constexpr operator uint32_t() const
-  { return value; }
+  {
+    return value;
+  }
 
   uint32_t value{};
 };
@@ -74,11 +89,14 @@ struct midi
 struct string
 {
   constexpr string() = default;
-  constexpr explicit string(const char* value_)
-    : value(value_) { }
+  constexpr explicit string(const char* value_) : value(value_)
+  {
+  }
 
   constexpr operator std::string_view() const
-  { return value; }
+  {
+    return value;
+  }
 
   std::string_view value{};
 };
@@ -86,11 +104,14 @@ struct string
 struct time_tag
 {
   constexpr time_tag() = default;
-  constexpr explicit time_tag(uint64_t value_)
-    : value(value_) { }
+  constexpr explicit time_tag(uint64_t value_) : value(value_)
+  {
+  }
 
   constexpr operator uint64_t() const
-  { return value; }
+  {
+    return value;
+  }
 
   uint64_t value{};
 };
@@ -98,11 +119,14 @@ struct time_tag
 struct symbol
 {
   constexpr symbol() = default;
-  constexpr explicit symbol(const char* value_)
-    : value(value_) { }
+  constexpr explicit symbol(const char* value_) : value(value_)
+  {
+  }
 
   constexpr operator std::string_view() const
-  { return value; }
+  {
+    return value;
+  }
 
   std::string_view value{};
 };
@@ -119,7 +143,10 @@ struct blob
   std::size_t size{};
 };
 
-struct begin_array { };
-struct end_array { };
-
+struct begin_array
+{
+};
+struct end_array
+{
+};
 }

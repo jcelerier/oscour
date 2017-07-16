@@ -1,10 +1,10 @@
 #pragma once
-#include <oscour/types.hpp>
-#include <oscour/traits.hpp>
+#include <algorithm>
+#include <array>
 #include <oscour/bundle.hpp>
 #include <oscour/exceptions.hpp>
-#include <array>
-#include <algorithm>
+#include <oscour/traits.hpp>
+#include <oscour/types.hpp>
 
 namespace oscour
 {
@@ -23,69 +23,29 @@ public:
     return m_typeTags[0];
   }
 
-  template<typename Fun>
-  void apply(Fun f) const {
-    switch(type_tag())
-    {
-      case oscour::type_tag::INT32_TYPE_TAG:
-        f(get_unchecked<int32_t>()); break;
-      case oscour::type_tag::INT64_TYPE_TAG:
-        f(get_unchecked<int64_t>()); break;
-      case oscour::type_tag::TRUE_TYPE_TAG:
-      case oscour::type_tag::FALSE_TYPE_TAG:
-        f(get_unchecked<bool>()); break;
-      case oscour::type_tag::NIL_TYPE_TAG:
-        f(get_unchecked<nil>()); break;
-      case oscour::type_tag::INFINITUM_TYPE_TAG:
-        f(get_unchecked<infinitum>()); break;
-      case oscour::type_tag::FLOAT_TYPE_TAG:
-        f(get_unchecked<float>()); break;
-      case oscour::type_tag::DOUBLE_TYPE_TAG:
-        f(get_unchecked<double>()); break;
-      case oscour::type_tag::CHAR_TYPE_TAG:
-        f(get_unchecked<char>()); break;
-      case oscour::type_tag::STRING_TYPE_TAG:
-        f(get_unchecked<string>()); break;
-      case oscour::type_tag::SYMBOL_TYPE_TAG:
-        f(get_unchecked<symbol>()); break;
-      case oscour::type_tag::RGBA_COLOR_TYPE_TAG:
-        f(get_unchecked<rgba>()); break;
-      case oscour::type_tag::MIDI_MESSAGE_TYPE_TAG:
-        f(get_unchecked<midi>()); break;
-      case oscour::type_tag::TIME_TAG_TYPE_TAG:
-        f(get_unchecked<time_tag>()); break;
-      case oscour::type_tag::BLOB_TYPE_TAG:
-        f(get_unchecked<blob>()); break;
-      case oscour::type_tag::ARRAY_BEGIN_TYPE_TAG:
-        f(get_unchecked<begin_array>()); break;
-      case oscour::type_tag::ARRAY_END_TYPE_TAG:
-        f(get_unchecked<end_array>()); break;
-      default:
-        break;
-    }
-  }
-
-  template<typename T>
-  bool is() const {
+  template <typename T>
+  bool is() const
+  {
     return std::find(
-          std::begin(osc_type<T>::typetags),
-          std::end(osc_type<T>::typetags),
-          type_tag()) != std::end(osc_type<T>::typetags);
+               std::begin(osc_type<T>::typetags),
+               std::end(osc_type<T>::typetags), type_tag())
+           != std::end(osc_type<T>::typetags);
   }
 
-  template<typename T>
-  T get_unchecked() const {
+  template <typename T>
+  T get_unchecked() const
+  {
     using type = osc_type<T>;
     return type::read(m_arguments.data(), type_tag());
   }
 
-  template<typename T>
+  template <typename T>
   T get() const
   {
     using type = osc_type<T>;
     if (!m_typeTags.empty())
     {
-      if(is<T>())
+      if (is<T>())
         return this->get_unchecked<T>();
       else
         throw wrong_argument_type();
@@ -140,8 +100,6 @@ private:
   span m_typeTags;
   span m_arguments;
 };
-
-
 
 class message_argument_iterator
 {
@@ -235,17 +193,19 @@ private:
         // the arguments have already been validated in
         // ReceivedMessage::Init() below.
 
-        m_value.m_arguments = { FindStr4End(m_value.m_arguments.data()),
-                                m_value.m_arguments.data() + m_value.m_arguments.size() };
+        m_value.m_arguments
+            = {find_str4_end(m_value.m_arguments.data()),
+               m_value.m_arguments.data() + m_value.m_arguments.size()};
         break;
 
       case BLOB_TYPE_TAG:
       {
         // treat blob size as an unsigned int for the purposes of this
         // calculation
-        uint32_t blobSize = to_T<uint32_t>(m_value.m_arguments.data());
-        m_value.m_arguments = { m_value.m_arguments.data() + sizeof(int32_t)
-                             + RoundUp4(blobSize), m_value.m_arguments.data() + m_value.m_arguments.size()} ;
+        uint32_t blobSize = from_net<uint32_t>(m_value.m_arguments.data());
+        m_value.m_arguments = {
+            m_value.m_arguments.data() + sizeof(int32_t) + round_up_4(blobSize),
+            m_value.m_arguments.data() + m_value.m_arguments.size()};
       }
       break;
 
@@ -272,12 +232,10 @@ private:
   }
 };
 
-
-
 class message_view_stream
 {
 public:
-  template<typename T>
+  template <typename T>
   message_view_stream& operator>>(T& rhs)
   {
     if (p_ == end_)
@@ -311,13 +269,11 @@ class message_view
 {
 public:
   using const_iterator = message_argument_iterator;
-  explicit message_view(span p)
-    : m_message{p}
+  explicit message_view(span p) : m_message{p}
   {
     init(m_message);
   }
-  explicit message_view(bundle_element_view b)
-    : m_message{b.data()}
+  explicit message_view(bundle_element_view b) : m_message{b.data()}
   {
     init(m_message);
   }
@@ -333,7 +289,7 @@ public:
   }
   uint32_t address_pattern_as_uint32() const
   {
-    return to_T<uint32_t>(m_addressPattern.data());
+    return from_net<uint32_t>(m_addressPattern.data());
   }
 
   std::size_t argument_count() const
@@ -353,7 +309,8 @@ public:
 
   message_argument_iterator end() const
   {
-    return message_argument_iterator(span(m_typeTags.data() + size(), std::ptrdiff_t{}), {});
+    return message_argument_iterator(
+        span(m_typeTags.data() + size(), std::ptrdiff_t{}), {});
   }
 
   message_view_stream stream() const
@@ -382,7 +339,7 @@ private:
     const auto begin = message.data();
     const auto end = message.data() + size;
 
-    auto tagBegin = FindStr4End(begin, end);
+    auto tagBegin = find_str4_end(begin, end);
     if (tagBegin == nullptr)
     {
       // address pattern was not terminated before end
@@ -399,12 +356,12 @@ private:
       m_typeTags = {tagBegin, end};
       auto addr_end = m_typeTags.data();
       int i = 1;
-      for(; i < 5; i++)
+      for (; i < 5; i++)
       {
-        if(*(addr_end - i) != 0)
+        if (*(addr_end - i) != 0)
           break;
       }
-      m_addressPattern = { message.data(), addr_end - i + 1 };
+      m_addressPattern = {message.data(), addr_end - i + 1};
       if (m_typeTags[0] != ',')
         throw malformed_message("type tags not present");
 
@@ -416,7 +373,7 @@ private:
       else
       {
         // check that all arguments are present and well formed
-        auto argBegin = FindStr4End(m_typeTags.data(), end);
+        auto argBegin = find_str4_end(m_typeTags.data(), end);
         if (argBegin == nullptr)
           throw malformed_message(
               "type tags were not terminated before end of message");
@@ -440,8 +397,7 @@ private:
               break;
 
             //    [ Indicates the beginning of an array. The tags following are
-            //    for
-            //        data in the Array until a close brace tag is reached.
+            //    for data in the Array until a close brace tag is reached.
             //    ] Indicates the end of an array.
             case ARRAY_BEGIN_TYPE_TAG:
               ++arrayLevel;
@@ -482,8 +438,8 @@ private:
 
               if (argument == end)
                 throw malformed_message("arguments exceed message size");
-              argument = FindStr4End(argument, end);
-              if (argument == 0)
+              argument = find_str4_end(argument, end);
+              if (argument == nullptr)
                 throw malformed_message("unterminated string argument");
               break;
 
@@ -491,9 +447,9 @@ private:
             {
               // treat blob size as an unsigned int for the purposes of this
               // calculation
-              uint32_t blobSize = to_T<uint32_t>(argument);
+              uint32_t blobSize = from_net<uint32_t>(argument);
               argument
-                  = argument + oscour::OSC_SIZEOF_INT32 + RoundUp4(blobSize);
+                  = argument + sizeof(int32_t) + round_up_4(blobSize);
               if (argument > end)
                 malformed_message("arguments exceed message size");
             }
@@ -519,6 +475,66 @@ private:
   span m_typeTags;
   span m_arguments;
 };
+
+template <typename Fun>
+void apply(Fun f, const message_argument_view& m)
+{
+  switch (m.type_tag())
+  {
+    case oscour::type_tag::INT32_TYPE_TAG:
+      f(m.get_unchecked<int32_t>());
+      break;
+    case oscour::type_tag::INT64_TYPE_TAG:
+      f(m.get_unchecked<int64_t>());
+      break;
+    case oscour::type_tag::TRUE_TYPE_TAG:
+    case oscour::type_tag::FALSE_TYPE_TAG:
+      f(m.get_unchecked<bool>());
+      break;
+    case oscour::type_tag::NIL_TYPE_TAG:
+      f(m.get_unchecked<nil>());
+      break;
+    case oscour::type_tag::INFINITUM_TYPE_TAG:
+      f(m.get_unchecked<infinitum>());
+      break;
+    case oscour::type_tag::FLOAT_TYPE_TAG:
+      f(m.get_unchecked<float>());
+      break;
+    case oscour::type_tag::DOUBLE_TYPE_TAG:
+      f(m.get_unchecked<double>());
+      break;
+    case oscour::type_tag::CHAR_TYPE_TAG:
+      f(m.get_unchecked<char>());
+      break;
+    case oscour::type_tag::STRING_TYPE_TAG:
+      f(m.get_unchecked<string>());
+      break;
+    case oscour::type_tag::SYMBOL_TYPE_TAG:
+      f(m.get_unchecked<symbol>());
+      break;
+    case oscour::type_tag::RGBA_COLOR_TYPE_TAG:
+      f(m.get_unchecked<rgba>());
+      break;
+    case oscour::type_tag::MIDI_MESSAGE_TYPE_TAG:
+      f(m.get_unchecked<midi>());
+      break;
+    case oscour::type_tag::TIME_TAG_TYPE_TAG:
+      f(m.get_unchecked<time_tag>());
+      break;
+    case oscour::type_tag::BLOB_TYPE_TAG:
+      f(m.get_unchecked<blob>());
+      break;
+    case oscour::type_tag::ARRAY_BEGIN_TYPE_TAG:
+      f(m.get_unchecked<begin_array>());
+      break;
+    case oscour::type_tag::ARRAY_END_TYPE_TAG:
+      f(m.get_unchecked<end_array>());
+      break;
+    default:
+      break;
+  }
+}
+
 }
 
 inline auto begin(const oscour::message_view& mes)
@@ -530,3 +546,4 @@ inline auto end(const oscour::message_view& mes)
 {
   return mes.end();
 }
+

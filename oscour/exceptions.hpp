@@ -1,53 +1,83 @@
 #pragma once
 #include <stdexcept>
+
 namespace oscour
 {
-class malformed_packet : public std::runtime_error
+struct malformed_packet : public std::runtime_error
 {
-public:
   malformed_packet(const char* w = "malformed packet") : std::runtime_error(w)
   {
   }
 };
 
-class malformed_message : public std::runtime_error
+struct malformed_message : public std::runtime_error
 {
-public:
   malformed_message(const char* w = "malformed message")
       : std::runtime_error(w)
   {
   }
 };
 
-class malformed_bundle : public std::runtime_error
+struct malformed_bundle : public std::runtime_error
 {
-public:
   malformed_bundle(const char* w = "malformed bundle") : std::runtime_error(w)
   {
   }
 };
 
-class wrong_argument_type : public std::runtime_error
+struct wrong_argument_type : public std::runtime_error
 {
-public:
   wrong_argument_type(const char* w = "wrong argument type")
       : std::runtime_error(w)
   {
   }
 };
 
-class missing_argument : public std::runtime_error
+struct missing_argument : public std::runtime_error
 {
-public:
   missing_argument(const char* w = "missing argument") : std::runtime_error(w)
   {
   }
 };
 
-class excess_argument : public std::runtime_error
+struct excess_argument : public std::runtime_error
 {
-public:
   excess_argument(const char* w = "too many arguments") : std::runtime_error(w)
+  {
+  }
+};
+
+struct out_of_memory : public std::runtime_error
+{
+  out_of_memory(const char* w = "out of buffer memory") : std::runtime_error(w)
+  {
+  }
+};
+
+struct bundle_not_in_progress : public std::runtime_error
+{
+  bundle_not_in_progress(
+      const char* w = "call to EndBundle when bundle is not in progress")
+      : std::runtime_error(w)
+  {
+  }
+};
+
+struct message_in_progress : public std::runtime_error
+{
+  message_in_progress(
+      const char* w
+      = "opening or closing bundle or message while message is in progress")
+      : std::runtime_error(w)
+  {
+  }
+};
+
+struct message_not_in_progress : public std::runtime_error
+{
+  message_not_in_progress(
+      const char* w = "call to EndMessage when message is not in progress")
+      : std::runtime_error(w)
   {
   }
 };

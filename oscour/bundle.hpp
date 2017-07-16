@@ -1,6 +1,6 @@
 #pragma once
-#include <oscour/utils.hpp>
 #include <oscour/exceptions.hpp>
+#include <oscour/utils.hpp>
 
 namespace oscour
 {
@@ -8,7 +8,7 @@ class bundle_element_view
 {
 public:
   bundle_element_view(const char* sizePtr)
-      : m_data{sizePtr + sizeof(int32_t), to_T<int32_t>(sizePtr)}
+      : m_data{sizePtr + sizeof(int32_t), from_net<int32_t>(sizePtr)}
   {
   }
 
@@ -27,34 +27,47 @@ public:
   class iterator
   {
   public:
-    iterator(const char* sizePtr)
-      : m_value{sizePtr} { }
+    iterator(const char* sizePtr) : m_value{sizePtr}
+    {
+    }
 
-    iterator operator++() {
+    iterator operator++()
+    {
       advance();
       return *this;
     }
 
-    iterator operator++(int) {
+    iterator operator++(int)
+    {
       iterator old(*this);
       advance();
       return old;
     }
 
     const bundle_element_view& operator*() const
-    { return m_value; }
+    {
+      return m_value;
+    }
     const bundle_element_view* operator->() const
-    { return &m_value; }
+    {
+      return &m_value;
+    }
 
-    friend bool operator==( const iterator& lhs, const iterator& rhs)
-    { return lhs.m_value.data() == rhs.m_value.data(); }
+    friend bool operator==(const iterator& lhs, const iterator& rhs)
+    {
+      return lhs.m_value.data() == rhs.m_value.data();
+    }
 
-    friend bool operator!=( const iterator& lhs, const iterator& rhs)
-    { return !(lhs == rhs); }
+    friend bool operator!=(const iterator& lhs, const iterator& rhs)
+    {
+      return !(lhs == rhs);
+    }
 
   private:
-    void advance() {
-      m_value = bundle_element_view{m_value.data().data() + m_value.data().size()};
+    void advance()
+    {
+      m_value
+          = bundle_element_view{m_value.data().data() + m_value.data().size()};
     }
     bundle_element_view m_value;
   };
@@ -65,15 +78,14 @@ public:
   {
     init(p);
   }
-  explicit bundle_view(const bundle_element_view& e)
-      : elementCount_(0)
+  explicit bundle_view(const bundle_element_view& e) : elementCount_(0)
   {
     init(e.data());
   }
 
   uint64_t time_tag() const
   {
-    return to_T<uint64_t>(timeTag_);
+    return from_net<uint64_t>(timeTag_);
   }
 
   uint32_t size() const
@@ -114,16 +126,16 @@ private:
 
     while (p < end_)
     {
-      if (p + oscour::OSC_SIZEOF_INT32 > end_)
+      if (p + sizeof(int32_t) > end_)
         throw malformed_bundle("packet too short for elementSize");
 
       // treat element size as an unsigned int for the purposes of this
       // calculation
-      uint32_t elementSize = to_T<uint32_t>(p);
+      uint32_t elementSize = from_net<uint32_t>(p);
       if ((elementSize & ((uint32_t)0x03)) != 0)
         throw malformed_bundle("bundle element size must be multiple of four");
 
-      p += oscour::OSC_SIZEOF_INT32 + elementSize;
+      p += sizeof(int32_t) + elementSize;
       if (p > end_)
         throw malformed_bundle("packet too short for bundle element");
 
@@ -137,5 +149,4 @@ private:
   const char* end_;
   uint32_t elementCount_;
 };
-
 }

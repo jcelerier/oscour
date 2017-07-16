@@ -8,6 +8,30 @@ using namespace asio::ip;
 
 class udp_client
 {
+
+public:
+  udp_client(std::string host, uint16_t port)
+      : m_resolver{m_service}
+      , m_query{udp::v4(), host, std::to_string(port)}
+      , m_endpoint{*m_resolver.resolve(m_query)}
+      , m_socket{m_service}
+
+  {
+    m_socket.open(udp::v4());
+  }
+
+  void send(span s)
+  {
+    m_socket.send_to(asio::buffer(s.data(), s.size()), m_endpoint);
+  }
+
+private:
+  io_service m_service;
+  udp::resolver m_resolver;
+  udp::resolver::query m_query;
+
+  udp::endpoint m_endpoint;
+  udp::socket m_socket;
 };
 
 template <typename OnMessage>
