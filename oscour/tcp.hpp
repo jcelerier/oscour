@@ -18,10 +18,6 @@ public:
 
   void send(const oscour::message<Any>& m)
   {
-    send(oscour::bundle{m});
-  }
-  void send(oscour::message<Any>&& m)
-  {
     span sp{m};
 
     char n[8];

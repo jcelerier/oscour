@@ -5,7 +5,6 @@
 int main()
 {
   // Setup a server
-  std::cerr << std::string_view{};
   oscour::osc_lax_receiver recv;
   recv.on_message("/foo/bar", [] (float f, std::string_view c) {
     std::cerr << f << " " << c << std::endl;

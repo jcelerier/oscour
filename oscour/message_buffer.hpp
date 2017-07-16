@@ -132,7 +132,7 @@ public:
     m_stream << end_message{};
   }
 
-  operator oscour::span() {
+  operator oscour::span() const {
     return {m_stream.data(), gsl::narrow_cast<std::ptrdiff_t>(m_stream.size())};
   }
 
