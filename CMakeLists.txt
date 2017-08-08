@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 project(oscour)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -fconcepts -fsanitize=address -fsanitize=undefined")
-set(CMAKE_EXE_LINKER_FLAGS "-std=c++17 -fconcepts -fsanitize=address -fsanitize=undefined")
+set(CMAKE_CXX_FLAGS "-fconcepts -fsanitize=address -fsanitize=undefined")
+set(CMAKE_EXE_LINKER_FLAGS "-fconcepts -fsanitize=address -fsanitize=undefined")
 add_subdirectory(uWebSockets)
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 add_library(oscour INTERFACE)
 target_sources(oscour INTERFACE
@@ -29,8 +31,9 @@ target_sources(oscour INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR}/oscour/oscour.hpp)
 
 target_include_directories(oscour INTERFACE oscour/)
-target_link_libraries(oscour INTERFACE Threads::Threads uWS)
-
+target_link_libraries(oscour INTERFACE uWS Threads::Threads)
+#target_compile_features(oscour INTERFACE cxx_std_17)
+target_compile_options(oscour INTERFACE -std=c++17)
 add_executable(udp examples/udp.cpp)
 target_link_libraries(udp PRIVATE oscour)
 
@@ -48,4 +51,3 @@ target_link_libraries(websocket PRIVATE oscour)
 
 add_executable(complete examples/complete.cpp)
 target_link_libraries(complete PRIVATE oscour)
-# set_target_properties(oscour PROPERTIES CXX_STANDARD 17)

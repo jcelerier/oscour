@@ -7,13 +7,13 @@ namespace oscour
 {
 using namespace asio;
 using namespace asio::ip;
-  
+
 class serial_client
 {
 public:
   serial_client(const std::string& port, const Any&... args)
   {
-    (m_socket.set_option(args)...);
+    (m_socket.set_option(args), ...);
   }
 
   void send(const oscour::message<Any>& m)

@@ -1,4 +1,4 @@
-#include "oscour.hpp"
+#include <oscour/oscour.hpp>
 #include <chrono>
 #include <iostream>
 #include <oscour/ostream.hpp>
